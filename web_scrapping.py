@@ -32,6 +32,18 @@ def extract_add_data(url):
     for city in loc:
         add_data["city"] = city.text
 
+    activities = []
+
+    try:
+        acts = soup.find("div",{"class":"serviceofferinglinks"}).find("ul")
+        acts_name = acts.find_all("li",{"class":"serviceoffer"})
+        for act in acts_name:
+            activities.append(act.text)
+
+    except:
+        pass
+    add_data["activities"] = activities
+
     actions = ActionChains(browser)
     categories = []
     plan = {}
@@ -83,6 +95,62 @@ def extract_add_data(url):
         pass
     add_data["plan"] = plan
 
+    ratings = {}
+    try:
+        aminities_section = browser.find_element_by_xpath("//div[@class='mui-container']")
+        actions.move_to_element(aminities_section).perform()
+
+
+        ratings["total_ratings_and_reviews"] = soup.find("div",{"class":"heading-text section-header"}).find("span").text.split("(")[1].split(")")[0]
+    except:
+        pass
+
+    try:
+        ratings["average_ratings_overall"] = soup.find("div",{"class":"rating-review-block"}).find("span",{"class":"overall-rating avg-rating color8"}).text
+        average_ratings = soup.find("div",{"class":"rating-review-block"}).find_all("span",{"class":"counting-span"})
+        ratings["average_facilities"] = average_ratings[0].text
+        ratings["average_instructor"] = average_ratings[1].text
+        ratings["average_vibe"] = average_ratings[2].text
+        ratings["average_value_for_money"] = average_ratings[3].text
+        ratings["average_equipment"] = average_ratings[4].text
+
+
+    except:
+        pass
+
+    add_data["ratings"] = ratings
+
+    aminities = []
+    try:
+        aminities_section = browser.find_element_by_xpath("//div[@class='container-info mui-row']")
+        actions.move_to_element(aminities_section).perform()
+
+
+        aminities_section = soup.find("div",{"class":"container-info mui-row"})
+        aminities_name = aminities_section.find_all("div",{"class":"title"})
+        for i in aminities_name:
+            if "inactive-facility" not in i.get("class"):
+                aminities.append(i.find("span").text)
+
+
+    except:
+        pass
+
+    add_data["aminities"] = aminities
+
+    extras = []
+    try:
+        extra_info = aminities_section.find("div",{"class":"mui-col-md-12 subofferings hidemobile"})
+        extra_items = extra_info.find_all("div",{"class":"tag"})
+        for i in extra_items:
+            if i.find("span").text not in extras:
+                extras.append(i.find("span").text)
+
+    except:
+        pass
+
+    add_data["extra_info"] = extras
+
     return add_data
 
 
@@ -128,12 +196,13 @@ def extract_data(url):
 
     for i in range(len(image_res)):
         test = {}
+        test["name"] = name_res[i]
         test["image"] = image_res[i]
         test["lat"] = lat_res[i]
         test["lon"] = long_res[i]
         test["href"] = link_res[i]
         test["additional_details"] = add_data[i]
-        data[name_res[i]] = test
+        data[str(i)] = test
 
     return data
 
