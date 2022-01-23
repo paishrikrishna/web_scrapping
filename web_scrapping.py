@@ -2,6 +2,9 @@ import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
+import time
+
 data = {}
 
 
@@ -15,6 +18,8 @@ def extract_add_data(url):
 
     browser = webdriver.Chrome(executable_path="/home/shri/Desktop/GitHub/web_scrapping/chromedriver")
     browser.get(url)
+    browser.maximize_window()
+
     soup = BeautifulSoup(browser.page_source,"html.parser")
 
     adr = soup.find_all("div",{"class":"location-text"})
@@ -27,19 +32,57 @@ def extract_add_data(url):
     for city in loc:
         add_data["city"] = city.text
 
-    rate_cards = soup.find_all("div",{"class":"mui-row rate-item ratecard-vertical-center"})
+    actions = ActionChains(browser)
+    categories = []
+    plan = {}
 
-    plans = {}
-    for i in range(len(rate_cards)):
-         duration = rate_cards[i].find("div",{"class":"mui-col-md-8 mui-col-xs-12 ratecard-duration"})
-         prices = rate_cards[i].find("span",{"id":"offer"})
-         if prices == None:
-             prices = rate_cards[i].find_all("span")[1]
-         period = duration.text.split(" ")
 
-         plans[period[0]+" "+period[1]] = prices.text
+    try:
+        rate_card_section = browser.find_element_by_xpath("//div[@class='container-info mui-row ratecard-container']")
+        individual_rates_section = rate_card_section.find_elements_by_xpath("//div[@class='icon-block']")
 
-    add_data["plans"] = plans
+        actions.move_to_element(individual_rates_section[0]).perform()
+        individual_rates_section[0].click()
+
+        category = soup.find_all("div",{"class":"service-name mui-col-md-9"})
+        for i in category:
+            if i.get("data-service-name") not in categories:
+                categories.append(i.get("data-service-name"))
+
+        for i in individual_rates_section:
+            actions.move_to_element(i).perform()
+            #time.sleep(5)
+            i.click()
+
+    except:
+        pass
+
+
+    try:
+
+        card = soup.find_all("div",{"class","mui-col-xs-12 service-detail-container"})
+
+        for i in range(len(card)):
+            plans = {}
+            indi_plan = card[i].find_all("div",{"class":"mui-row ratecard-vertical-center"})
+            for r in indi_plan:
+                duration = r.find("span",{"class":"duration"})
+                duration_extra = r.find("span",{"id":"offer","class":"duration"})
+                if duration_extra == None:
+                    duration_extra_text = ""
+                else:
+                    duration_extra_text = " " + duration_extra.text
+                prices = r.find("span",{"id":"offer","itemprop":"price"})
+                if prices == None:
+                    prices = r.find("div",{"class":"mui-col-md-4 mui-col-xs-12 ratecard-price"})
+                if duration == None:
+                    duration = r.find("div",{"class":"mui-col-md-8 mui-col-xs-12 ratecard-duration"})
+                plans[duration.text + duration_extra_text] = prices.text
+            plan[categories[i]] = plans
+    except:
+        pass
+    add_data["plan"] = plan
+
     return add_data
 
 
