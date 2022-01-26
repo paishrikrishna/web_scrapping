@@ -4,6 +4,39 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 import time
+import xlwt
+from xlwt import Workbook
+
+# Workbook is created
+wb = Workbook()
+
+# add_sheet is used to create sheet.
+sheet1 = wb.add_sheet('Gym Details')
+sheet2 = wb.add_sheet('Membership Plans')
+sheet2_counter = 0
+sheet1_counter = 0
+
+sheet1.write(0,0,'Name')
+sheet1.write(0,1,'Latitude')
+sheet1.write(0,2,'Longitude')
+sheet1.write(0,3,'Fitternity Page Link')
+sheet1.write(0,4,'Address')
+sheet1.write(0,5,'City')
+sheet1.write(0,6,'Activities')
+sheet1.write(0,7,'Total Reivew')
+sheet1.write(0,8,'Overall Rating')
+sheet1.write(0,9,'Facility Ratings')
+sheet1.write(0,10,'Instructor Ratings')
+sheet1.write(0,11,'Vibe Ratings')
+sheet1.write(0,12,'Value For Money Ratings')
+sheet1.write(0,13,'Equipment Ratings')
+sheet1.write(0,14,'Aminities')
+sheet1.write(0,15,'Extra Info')
+
+
+sheet2.write(0,0,'Gym Name')
+sheet2.write(0,1,'Plan Name')
+sheet2.write(0,2,'Price in Rs.')
 
 data = {}
 
@@ -101,12 +134,12 @@ def extract_add_data(url):
         actions.move_to_element(aminities_section).perform()
 
 
-        ratings["total_ratings_and_reviews"] = soup.find("div",{"class":"heading-text section-header"}).find("span").text.split("(")[1].split(")")[0]
+        ratings["total_ratings_and_reviews"] = soup.find("div",{"class":"mui-col-md-10 mui-col-xs-12"}).find("div",{"class":"heading-text section-header"}).find("span").text.split("(")[1].split(")")[0]
     except:
         pass
 
     try:
-        ratings["average_ratings_overall"] = soup.find("div",{"class":"rating-review-block"}).find("span",{"class":"overall-rating avg-rating color8"}).text
+        ratings["average_ratings_overall"] = soup.find("div",{"class":"rating-review-block"}).find("div",{"class":"mui-col-xs-12 mui-col-md-12 average-rating"}).find("span").text
         average_ratings = soup.find("div",{"class":"rating-review-block"}).find_all("span",{"class":"counting-span"})
         ratings["average_facilities"] = average_ratings[0].text
         ratings["average_instructor"] = average_ratings[1].text
@@ -192,7 +225,7 @@ def extract_data(url):
                 link_res.append("https://www.fitternity.com"+link.get("href"))
                 add_data.append(extract_add_data(link_res[-1]))
 
-
+    global sheet1_counter
 
     for i in range(len(image_res)):
         test = {}
@@ -204,6 +237,45 @@ def extract_data(url):
         test["additional_details"] = add_data[i]
         data[str(i)] = test
 
+        sheet1.write(sheet1_counter+i+1,0,name_res[i])
+        sheet1.write(sheet1_counter+i+1,1,lat_res[i])
+        sheet1.write(sheet1_counter+i+1,2,long_res[i])
+        sheet1.write(sheet1_counter+i+1,3,link_res[i])
+        sheet1.write(sheet1_counter+i+1,4,add_data[i]["address"])
+        sheet1.write(sheet1_counter+i+1,5,add_data[i]["city"])
+        sheet1.write(sheet1_counter+i+1,6," ".join(add_data[i]["activities"]))
+        print(add_data[i]["ratings"])
+        sheet1.write(sheet1_counter+i+1,7,add_data[i]["ratings"]["total_ratings_and_reviews"])
+        sheet1.write(sheet1_counter+i+1,8,add_data[i]["ratings"]["average_ratings_overall"])
+        sheet1.write(sheet1_counter+i+1,9,add_data[i]["ratings"]["average_facilities"])
+        sheet1.write(sheet1_counter+i+1,10,add_data[i]["ratings"]["average_instructor"])
+        sheet1.write(sheet1_counter+i+1,11,add_data[i]["ratings"]["average_vibe"])
+        sheet1.write(sheet1_counter+i+1,12,add_data[i]["ratings"]["average_value_for_money"])
+        sheet1.write(sheet1_counter+i+1,13,add_data[i]["ratings"]["average_equipment"])
+        sheet1.write(sheet1_counter+i+1,14," ".join(add_data[i]["aminities"]))
+        sheet1.write(sheet1_counter+i+1,15," ".join(add_data[i]["extra_info"]))
+
+        global sheet2_counter
+        plans_details = list(add_data[i]["plan"].keys())
+        plans_values = list(add_data[i]["plan"].values())
+
+        for j in range(sheet2_counter,sheet2_counter+len(plans_details)):
+            sheet2.write(j+1,0,name_res[i])
+            sheet2.write(j+1,1,plans_details[j-sheet2_counter])
+            sheet2.write(j+1,2,str(plans_values[j-sheet2_counter]).replace("{","").replace("}",""))
+
+        sheet2_counter += len(plans_details)
+        #print(plans_details)
+        #print(plans_values)
+    sheet1_counter += len(image_res)
     return data
 
-print(extract_data("https://www.fitternity.com/mumbai/fitness"))
+
+
+if __name__ == '__main__':
+    data_final = []
+    for i in range(1,3):
+        data_final.append(extract_data("https://www.fitternity.com/mumbai/fitness?page="+str(i)))
+
+    wb.save('xlwt example.xls')
+    print(data_final)

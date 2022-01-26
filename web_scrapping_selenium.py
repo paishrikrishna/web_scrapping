@@ -4,6 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.action_chains import ActionChains
 import time
+import xlwt
 
 
 #driver = webdriver.Chrome(executable_path='/home/shri/Desktop/GitHub/web_scrapping/chromedriver')
@@ -106,7 +107,7 @@ def extract_add_data(url):
         pass
 
     try:
-        ratings["average_ratings_overall"] = soup.find("div",{"class":"rating-review-block"}).find("span",{"class":"overall-rating avg-rating color8"}).text
+        ratings["average_ratings_overall"] = soup.find("div",{"class":"rating-review-block"}).find("div",{"class":"mui-col-xs-12 mui-col-md-12 average-rating"}).find("span").text
         average_ratings = soup.find("div",{"class":"rating-review-block"}).find_all("span",{"class":"counting-span"})
         ratings["average_facilities"] = average_ratings[0].text
         ratings["average_instructor"] = average_ratings[1].text
