@@ -236,33 +236,105 @@ def extract_data(url):
         test["href"] = link_res[i]
         test["additional_details"] = add_data[i]
         data[str(i)] = test
+        try:
+            sheet1.write(sheet1_counter+i+1,0,name_res[i])
+        except:
+            sheet1.write(sheet1_counter+i+1,0,"NULL")
 
-        sheet1.write(sheet1_counter+i+1,0,name_res[i])
-        sheet1.write(sheet1_counter+i+1,1,lat_res[i])
-        sheet1.write(sheet1_counter+i+1,2,long_res[i])
-        sheet1.write(sheet1_counter+i+1,3,link_res[i])
-        sheet1.write(sheet1_counter+i+1,4,add_data[i]["address"])
-        sheet1.write(sheet1_counter+i+1,5,add_data[i]["city"])
-        sheet1.write(sheet1_counter+i+1,6," ".join(add_data[i]["activities"]))
-        print(add_data[i]["ratings"])
-        sheet1.write(sheet1_counter+i+1,7,add_data[i]["ratings"]["total_ratings_and_reviews"])
-        sheet1.write(sheet1_counter+i+1,8,add_data[i]["ratings"]["average_ratings_overall"])
-        sheet1.write(sheet1_counter+i+1,9,add_data[i]["ratings"]["average_facilities"])
-        sheet1.write(sheet1_counter+i+1,10,add_data[i]["ratings"]["average_instructor"])
-        sheet1.write(sheet1_counter+i+1,11,add_data[i]["ratings"]["average_vibe"])
-        sheet1.write(sheet1_counter+i+1,12,add_data[i]["ratings"]["average_value_for_money"])
-        sheet1.write(sheet1_counter+i+1,13,add_data[i]["ratings"]["average_equipment"])
-        sheet1.write(sheet1_counter+i+1,14," ".join(add_data[i]["aminities"]))
-        sheet1.write(sheet1_counter+i+1,15," ".join(add_data[i]["extra_info"]))
+        try:
+            sheet1.write(sheet1_counter+i+1,1,lat_res[i])
+        except:
+            sheet1.write(sheet1_counter+i+1,1,"NULL")
+
+        try:
+            sheet1.write(sheet1_counter+i+1,2,long_res[i])
+        except:
+            sheet1.write(sheet1_counter+i+1,2,"NULL")
+
+        try:
+            sheet1.write(sheet1_counter+i+1,3,link_res[i])
+        except:
+            sheet1.write(sheet1_counter+i+1,3,"NULL")
+
+        try:
+            sheet1.write(sheet1_counter+i+1,4,add_data[i]["address"])
+        except:
+            sheet1.write(sheet1_counter+i+1,4,"NULL")
+
+        try:
+            sheet1.write(sheet1_counter+i+1,5,add_data[i]["city"])
+        except:
+            sheet1.write(sheet1_counter+i+1,5,"NULL")
+
+        try:
+            sheet1.write(sheet1_counter+i+1,6," ".join(add_data[i]["activities"]))
+        except:
+            sheet1.write(sheet1_counter+i+1,6,"NULL")
+
+        #print(add_data[i]["ratings"])
+
+        try:
+            sheet1.write(sheet1_counter+i+1,7,add_data[i]["ratings"]["total_ratings_and_reviews"])
+        except:
+            sheet1.write(sheet1_counter+i+1,7,"NULL")
+
+        try:
+            sheet1.write(sheet1_counter+i+1,8,add_data[i]["ratings"]["average_ratings_overall"])
+        except:
+            sheet1.write(sheet1_counter+i+1,8,"NULL")
+
+        try:
+            sheet1.write(sheet1_counter+i+1,9,add_data[i]["ratings"]["average_facilities"])
+        except:
+            sheet1.write(sheet1_counter+i+1,9,"NULL")
+
+        try:
+            sheet1.write(sheet1_counter+i+1,10,add_data[i]["ratings"]["average_instructor"])
+        except:
+            sheet1.write(sheet1_counter+i+1,10,"NULL")
+
+        try:
+            sheet1.write(sheet1_counter+i+1,11,add_data[i]["ratings"]["average_vibe"])
+        except:
+            sheet1.write(sheet1_counter+i+1,11,"NULL")
+
+        try:
+            sheet1.write(sheet1_counter+i+1,12,add_data[i]["ratings"]["average_value_for_money"])
+        except:
+            sheet1.write(sheet1_counter+i+1,12,"NULL")
+
+        try:
+            sheet1.write(sheet1_counter+i+1,13,add_data[i]["ratings"]["average_equipment"])
+        except:
+            sheet1.write(sheet1_counter+i+1,13,"NULL")
+
+        try:
+            sheet1.write(sheet1_counter+i+1,14," ".join(add_data[i]["aminities"]))
+        except:
+            sheet1.write(sheet1_counter+i+1,14,"NULL")
+
+        try:
+            sheet1.write(sheet1_counter+i+1,15," ".join(add_data[i]["extra_info"]))
+        except:
+            sheet1.write(sheet1_counter+i+1,15,"NULL")
 
         global sheet2_counter
         plans_details = list(add_data[i]["plan"].keys())
         plans_values = list(add_data[i]["plan"].values())
 
         for j in range(sheet2_counter,sheet2_counter+len(plans_details)):
-            sheet2.write(j+1,0,name_res[i])
-            sheet2.write(j+1,1,plans_details[j-sheet2_counter])
-            sheet2.write(j+1,2,str(plans_values[j-sheet2_counter]).replace("{","").replace("}",""))
+            try:
+                sheet2.write(j+1,0,name_res[i])
+            except:
+                sheet2.write(j+1,0,"NULL")
+            try:
+                sheet2.write(j+1,1,plans_details[j-sheet2_counter])
+            except:
+                sheet2.write(j+1,1,"NULL")
+            try:
+                sheet2.write(j+1,2,str(plans_values[j-sheet2_counter]).replace("{","").replace("}",""))
+            except:
+                sheet2.write(j+1,2,"NULL")
 
         sheet2_counter += len(plans_details)
         #print(plans_details)
@@ -274,8 +346,10 @@ def extract_data(url):
 
 if __name__ == '__main__':
     data_final = []
-    for i in range(1,3):
+    for i in range(1,10):
         data_final.append(extract_data("https://www.fitternity.com/mumbai/fitness?page="+str(i)))
+        if i/10 == 0:
+            time.sleep(10)
 
-    wb.save('xlwt example.xls')
+    wb.save('fitternity_scrapped_data.xls')
     print(data_final)
